@@ -1,4 +1,4 @@
-package skel;
+
 
 import java.util.List;
 
@@ -20,7 +20,6 @@ import java.util.ArrayList;
  * </pre>
  */
 public class Piece {
-
 	// String constants for the standard 7 Tetris pieces
 	public static final String STICK_STR = "0 0 0 1 0 2 0 3";
 	public static final String L1_STR = "0 0 0 1 0 2 1 0";
@@ -43,24 +42,27 @@ public class Piece {
 	 * copy of the array and the TPoints inside it.
 	 */
 	public Piece(List<TPoint> points) {
+
 	    this.body = points;
-	    this.width = this.body.get(3).x + 1;
-	    this.skirt = new ArrayList<Integer>(this.width);
+	    this.width = points.get(3).x + 1;
+	    this.skirt = new ArrayList<Integer>();
 	    
-	    
+
+	    for(int i = 0; i < this.width; i++)	 	 	 	 	 //init
+	     	 this.skirt.add(4);
+	   
 	    for(TPoint point : points) {
-	    	if(this.skirt.get(point.x) < point.y)
-	    		this.skirt.add(point.x, point.y);	    
-	    }
+	    	if(point.y < this.skirt.get(point.x))
+	    		this.skirt.set(point.x, point.y);
+	  }
 	    
 	    int maxHeight = -1;
-	    for(int height : this.skirt) {
-	    	if(height > maxHeight)
-	    		maxHeight = height;
+	    for(TPoint point : points) {
+	    	if(point.y > maxHeight)
+	    		maxHeight = point.y;
 	    }
 	    	
-	    this.height = maxHeight;
-	    
+	    this.height = maxHeight + 1;
 	}
 	
 	/**
@@ -116,7 +118,7 @@ public class Piece {
 	public List<TPoint> getBody() {
 		return this.body;
 	}
-
+	
 	/**
 	 * Returns a reference to the piece's skirt. For each x value across the
 	 * piece, the skirt gives the lowest y value in the body. This is useful for
@@ -132,25 +134,25 @@ public class Piece {
 	 * receiver.
 	 */
 	public Piece computeNextRotation() {
-		int nHeight = this.width;
-		int nWidth = this.height;
-		List<TPoint> nBody = new ArrayList<TPoint>(this.body.size());
+		List<TPoint> nBody = new ArrayList<TPoint>();
 	    for(int i = 0; i < this.body.size(); i++) {
 	    	TPoint point = this.body.get(i);
-	    	TPoint nPoint = new TPoint(nWidth - point.y,nHeight - point.x);
+	    	TPoint nPoint = new TPoint(this.height - point.y - 1,point.x);
 	    	nBody.add(nPoint);
 	    }
 	    
-	    List<TPoint> nBodyOrd = new ArrayList<TPoint>(this.body.size());
-	    int pieceCount = 0;
-	    for(int i = 0; i < nHeight; i++) {
-	    	for(int j = 0; j < nWidth; j++) {
-	    		for(int t = 0; t < this.body.size(); t++)
-	    			if(nBody.get(t) == new TPoint(j,i))
-	    				nBodyOrd.add(nBody.get(t));
+	    List<TPoint> nBodyOrd = new ArrayList<TPoint>();
+	    
+	    for(int i = 0; i < this.height; i++) {
+	    	for(int j = 0; j < this.width; j++) {
+	    		for(TPoint point : nBody) {
+	    			if(point.equals(new TPoint(i,j)) ) {
+	    				nBodyOrd.add(point);
+	    				break;
+	    			}
+	    		}	
 	    	}
 	    }
-	    
 	    return new Piece(nBodyOrd);
 	}
 
@@ -165,7 +167,7 @@ public class Piece {
 			Piece mobj = (Piece) obj;
 		    for(int i = 0; i < this.body.size(); i++) {
 		    	int j = 0;
-		    	while(this.body.get(i) != mobj.body.get(j) && j < 4)
+		    	while(j < 4 && !this.body.get(i).equals(mobj.body.get(j)))
 		    		j++;
 		    	if(j == 4)
 		    		return false;
