@@ -22,9 +22,11 @@ import java.awt.Toolkit;
 
 /*
  * Implementation notes: -The "currentPiece" points to a piece that is currently
- * falling, or is null when there is no piece. -tick() moves the current piece
- * -a timer object calls tick(DOWN) periodically -keystrokes call tick() with
- * LEFT, RIGHT, etc. -Board.undo() is used to remove the piece from its old
+ * falling, or is null when there is no piece. 
+ * -tick() moves the current piece
+ * -a timer object calls tick(DOWN) periodically 
+ * -keystrokes call tick() with LEFT, RIGHT, etc. 
+ * -Board.undo() is used to remove the piece from its old
  * position and then Board.place() is used to install the piece in its new
  * position.
  */
@@ -200,7 +202,7 @@ public class JTetris extends JComponent {
 	/**
 	 * Sets the enabling of the start/stop buttons based on the gameOn state.
 	 */
-	private void enableButtons() {
+	protected void enableButtons() {
 		startButton.setEnabled(!gameOn);
 		stopButton.setEnabled(gameOn);
 	}
@@ -299,7 +301,7 @@ public class JTetris extends JComponent {
 	/**
 	 * Updates the count/score labels with the latest values.
 	 */
-	private void updateCounters() {
+	protected void updateCounters() {
 		countLabel.setText("Pieces " + count);
 		scoreLabel.setText("Score " + score);
 	}
