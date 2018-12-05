@@ -166,10 +166,7 @@ public class Piece {
 		if(obj.getClass() == Piece.class) {
 			Piece mobj = (Piece) obj;
 		    for(int i = 0; i < this.body.size(); i++) {
-		    	int j = 0;
-		    	while(j < 4 && !this.body.get(i).equals(mobj.body.get(j)))
-		    		j++;
-		    	if(j == 4)
+		    	if(!this.body.get(i).equals(mobj.body.get(i)))
 		    		return false;
 		    }
 		    return true;
