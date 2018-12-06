@@ -114,6 +114,10 @@ public class JBrainTetris extends JTetris{
 		moved = (!failed && verb != DOWN);
 	}
 	
+	public void toggleBrain(boolean b) {
+		this.brainMode = b;
+	}
+	
 	public JComponent createControlPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -180,7 +184,7 @@ public class JBrainTetris extends JTetris{
 		
 		brainMode.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+					toggleBrain(brainMode.isSelected());
 			}
 			
 		}
