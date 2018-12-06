@@ -15,6 +15,10 @@ public class Board {
 	protected boolean[][] grid;
 	private boolean committed;
 	
+	private boolean[][] backupGrid;
+	private int backupWidths;
+	private int backupHeights;	
+	
 	/**
 	 * Creates an empty board of the given width and height measured in blocks.
 	 */
@@ -24,7 +28,20 @@ public class Board {
 
 		this.grid = new boolean[width][height];
 		this.committed = true;
-		// YOUR CODE HERE
+		
+		for (boolean[] i : this.grid){
+			for (boolean j : i){
+				j = false;
+			}
+		}
+	}
+	
+	//Copy a board
+	public Board(Board Cope){
+		this.width = Cope.width;
+		this.height = Cope.height;
+		this.grid = Cope.grid;
+		this.committed = Cope.committed;
 	}
 	
 	public int getWidth() {
@@ -40,7 +57,17 @@ public class Board {
 	 * this is 0.
 	 */
 	public int getMaxHeight() {
-	    return 0; // YOUR CODE HERE
+		int MaxHeight = 0;
+		for (boolean[] i : this.grid){
+			int cpt = 0;
+			for (boolean j : i){
+				if (j){
+					MaxHeight = cpt;
+				}
+				cpt++;
+			}
+		}
+	    return MaxHeight; 
 	}
 
 	/**
@@ -52,7 +79,16 @@ public class Board {
 	 * O(skirt length).
 	 */
 	public int dropHeight(Piece piece, int x) {
-	    return 0; // YOUR CODE HERE
+	    int maxHeight = 0;
+	    int cpt = 0;
+	    for (int i : piece.getSkirt()){
+	    	int ColumnHeight = this.getColumnHeight(cpt+x);
+	    	if (ColumnHeight + i > maxHeight){
+	    		maxHeight = ColumnHeight + i;
+	    	}
+	    	cpt++;
+	    }
+	    return maxHeight;
 	}
 
 	/**
@@ -60,14 +96,31 @@ public class Board {
 	 * block + 1. The height is 0 if the column contains no blocks.
 	 */
 	public int getColumnHeight(int x) {
-	    return 0; // YOUR CODE HERE
+		int Height = 0; //Quisas no need for just while then when true stop
+		int cpt = 0;
+	    for (boolean i : this.grid[x]){
+	    	if (i){
+	    		Height = cpt;
+	    	}
+	    	cpt++;
+	    }
+	    return Height;
 	}
 
 	/**
 	 * Returns the number of filled blocks in the given row.
 	 */
 	public int getRowWidth(int y) {
-	    return 0; // YOUR CODE HERE
+	    boolean[][] grille = this.grid;
+	    int cpt = 0;
+	    int pointeur = 0;
+	    while (pointeur < this.width){
+	    	if (grille[pointeur][y]){
+	    		cpt++;
+	    	}
+	    	pointeur++;
+	    }
+	    return cpt;
 	}
 
 	/**
@@ -75,7 +128,10 @@ public class Board {
 	 * the valid width/height area always return true.
 	 */
 	public boolean getGrid(int x, int y) {
-	    return false; // YOUR CODE HERE
+		if (x < 0 | x > this.width | y < 0 | y > this.height){
+			return true;
+		}
+		return this.grid[x][y];
 	}
 
 	public static final int PLACE_OK = 0;
@@ -101,9 +157,18 @@ public class Board {
 	    if (!this.committed) {
 		throw new RuntimeException("can only place object if the board has been commited");
 	    }
-
-	    // YOUR CODE HERE
-	    
+	    if (x < 0 | x > this.width | y < 0 | y > this.height){
+	    	return PLACE_OUT_BOUNDS; 
+	    } else if (piece.getWidth()+x >= this.width | piece.getHeight()+y >= this.height){
+	    	return PLACE_OUT_BOUNDS;
+	    } else if (piece.getWidth()+x < 0 | piece.getHeight()+y < 0){
+	    	return PLACE_OUT_BOUNDS;
+	    } 
+	    for (TPoint i : piece.getBody()){
+	    	if (!this.getGrid(i.x,i.y)) {
+	    		return PLACE_BAD;
+	    	}
+	    }
 	    return PLACE_OK;
 	}
 
@@ -112,7 +177,24 @@ public class Board {
 	 * down. Returns the number of rows cleared.
 	 */
 	public int clearRows() {
-	    return 0; // YOUR CODE HERE
+	    int rowsCleared = 0;
+	    for (int y = 0; y < this.height; y++){
+	    	if( this.width == this.getRowWidth(y)){
+	    		rowsCleared++;
+	    		for (int i = 0; i < this.width; i++){ //On enleve la ligne
+	    			this.grid[i][y] = false;
+	    		}
+	    		for (int retour = y; retour < this.getMaxHeight()-1; retour++){ //on down les lignes
+	    			for (int i = 0; i < this.width; i++){
+	    				this.grid[i][retour] = this.grid[i][retour+1];
+	    			}
+	    		}
+	    		for (int i = 0; i < this.width; i++){ //On enleve la ligne la plus haute
+	    			this.grid[i][this.height-1] = false;
+	    		}
+	    	}
+	    }
+	    return rowsCleared;
 	}
 
 	/**
@@ -154,7 +236,7 @@ public class Board {
 			buff.append('-');
 		return buff.toString();
 	}
-
+/**
 	// Only for unit tests
 	protected void updateWidthsHeights() {
 		Arrays.fill(this.widths, 0);
@@ -167,6 +249,6 @@ public class Board {
 				}
 			}
 		}
-	}
+	}**/
 
 }
