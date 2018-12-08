@@ -33,6 +33,7 @@ public class BoardTest {
 		Board b = new Board(3, 6);
 		
 		Piece pyr1 = new Piece(Piece.PYRAMID_STR);
+		
 		b.place(pyr1, 0, 0);
 		
 		assertEquals(1, b.getColumnHeight(0));
@@ -114,11 +115,15 @@ public class BoardTest {
 		
 		Piece p = new Piece(Piece.STICK_STR);
 		b.place(p, 0, 1);
+		System.out.println(b.toString());
 		assertEquals(5, b.getMaxHeight());
 
 		b.undo();
+		System.out.println(b.toString());
 		b.place(p, 0, 0);
+		System.out.println(b.toString());
 		b.commit();
+		System.out.println(b.toString());
 		assertEquals(4, b.getMaxHeight());
 	}
 	
@@ -128,13 +133,14 @@ public class BoardTest {
 		Board b2 = new Board(3, 10);
 		
 		b2.place(p1, 1, 1);
-		
 		b2.commit();
 		b2.place(p1, 0, 3);
 		b2.undo();
 		b2.place(p1, 0, 0);
 		b2.undo();
 		
+		b2.updateWidthsHeights();
+
 		assertTrue(Arrays.equals(new int[] {0, 5, 0}, b2.heights));
 	}
 	
@@ -271,7 +277,7 @@ public class BoardTest {
 		b.grid[2][2] = false;
 		b.grid[3][2] = true;
 		b.grid[4][2] = false;
-		
+
 		b.updateWidthsHeights();
 
 		Board expected = new Board(5, 7);
@@ -286,7 +292,7 @@ public class BoardTest {
 		expected.grid[2][1] = false;
 		expected.grid[3][1] = true;
 		expected.grid[4][1] = false;
-		
+
 		expected.updateWidthsHeights();
 	
 		assertEquals(1, b.clearRows());

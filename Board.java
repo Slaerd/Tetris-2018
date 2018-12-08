@@ -19,6 +19,9 @@ public class Board {
 	private int backupWidths;
 	private int backupHeights;	
 	
+	protected int[] heights;
+	protected int[] widths;
+	
 	/**
 	 * Creates an empty board of the given width and height measured in blocks.
 	 */
@@ -29,19 +32,48 @@ public class Board {
 		this.grid = new boolean[width][height];
 		this.committed = true;
 		
+		this.backupGrid = new boolean[width][height];
+		this.backupHeights = width;
+		this.backupWidths = height;
+		
+		this.heights = new int[height];
+		this.widths = new int[width];
+		/**Normalment deja initialise avec false
 		for (boolean[] i : this.grid){
 			for (boolean j : i){
 				j = false;
 			}
+		}**/
+		
+		for (int i = 0; i < width; i++) {
+			this.widths[i] = 0;
 		}
+		
+		for (int i = 0; i < height; i++) {
+			this.heights[i] = 0;
+		}
+	
 	}
 	
 	//Copy a board
 	public Board(Board Cope){
-		this.width = Cope.width;
+		/**this.width = Cope.width;
 		this.height = Cope.height;
+		
 		this.grid = Cope.grid;
 		this.committed = Cope.committed;
+		
+		this.backupGrid = Cope.backupGrid;
+		this.backupHeights = Cope.backupHeights;
+		this.backupWidths = Cope.backupWidths;
+		
+		this.widths = Cope.widths;
+		this.heights = Cope.heights;**/
+		for (int i = 0; i < this.width; i++) {
+			for (int j = 0; j < this.height; j++) {
+				this.backupGrid[i][j] = this.grid[i][j];
+			}
+		}
 	}
 	
 	public int getWidth() {
@@ -59,10 +91,10 @@ public class Board {
 	public int getMaxHeight() {
 		int MaxHeight = 0;
 		for (boolean[] i : this.grid){
-			int cpt = 0;
+			int cpt = 1;
 			for (boolean j : i){
 				if (j){
-					MaxHeight = cpt;
+					MaxHeight = Math.max(cpt,MaxHeight);
 				}
 				cpt++;
 			}
@@ -73,22 +105,17 @@ public class Board {
 	/**
 	 * Given a piece and an x, returns the y value where the piece would come to
 	 * rest if it were dropped straight down at that x.
-	 * 
-	 * <p>
 	 * Implementation: use the skirt and the col heights to compute this fast --
 	 * O(skirt length).
 	 */
 	public int dropHeight(Piece piece, int x) {
-	    int maxHeight = 0;
+	    int MaxHeight = 0;
 	    int cpt = 0;
 	    for (int i : piece.getSkirt()){
-	    	int ColumnHeight = this.getColumnHeight(cpt+x);
-	    	if (ColumnHeight + i > maxHeight){
-	    		maxHeight = ColumnHeight + i;
-	    	}
+	    	MaxHeight = Math.max(this.getColumnHeight(x+cpt),MaxHeight);
 	    	cpt++;
 	    }
-	    return maxHeight;
+	    return MaxHeight;
 	}
 
 	/**
@@ -96,8 +123,8 @@ public class Board {
 	 * block + 1. The height is 0 if the column contains no blocks.
 	 */
 	public int getColumnHeight(int x) {
-		int Height = 0; //Quisas no need for just while then when true stop
-		int cpt = 0;
+		int Height = 0;
+		int cpt = 1;
 	    for (boolean i : this.grid[x]){
 	    	if (i){
 	    		Height = cpt;
@@ -155,19 +182,28 @@ public class Board {
 	 */
 	public int place(Piece piece, int x, int y) {
 	    if (!this.committed) {
-		throw new RuntimeException("can only place object if the board has been commited");
+	    	throw new RuntimeException("can only place object if the board has been commited");
 	    }
-	    if (x < 0 | x > this.width | y < 0 | y > this.height){
+	    if (x < 0 | x >= this.width | y < 0 | y >= this.height){
 	    	return PLACE_OUT_BOUNDS; 
-	    } else if (piece.getWidth()+x >= this.width | piece.getHeight()+y >= this.height){
-	    	return PLACE_OUT_BOUNDS;
-	    } else if (piece.getWidth()+x < 0 | piece.getHeight()+y < 0){
+	    } else if (piece.getWidth()+x > this.width | piece.getHeight()+y > this.height){
 	    	return PLACE_OUT_BOUNDS;
 	    } 
 	    for (TPoint i : piece.getBody()){
-	    	if (!this.getGrid(i.x,i.y)) {
+	    	if (this.getGrid(i.x+x,i.y+y)) {
 	    		return PLACE_BAD;
 	    	}
+	    }
+	    boolean line_Full = false;
+	    for (TPoint i : piece.getBody()) {
+	    	this.grid[i.x+x][i.y+y] = true;
+	    	if (this.getRowWidth(i.y+y) == this.width) {
+	    		line_Full = true;
+	    	}
+	    }
+	    this.committed = false;
+	    if (line_Full) {
+	    	return PLACE_ROW_FILLED;
 	    }
 	    return PLACE_OK;
 	}
@@ -184,14 +220,15 @@ public class Board {
 	    		for (int i = 0; i < this.width; i++){ //On enleve la ligne
 	    			this.grid[i][y] = false;
 	    		}
-	    		for (int retour = y; retour < this.getMaxHeight()-1; retour++){ //on down les lignes
-	    			for (int i = 0; i < this.width; i++){
+	    		for (int i = 0; i < this.width; i++){//on down les lignes
+	    			for (int retour = y; retour < this.height-1; retour++){
 	    				this.grid[i][retour] = this.grid[i][retour+1];
 	    			}
 	    		}
 	    		for (int i = 0; i < this.width; i++){ //On enleve la ligne la plus haute
 	    			this.grid[i][this.height-1] = false;
 	    		}
+	    		y--;
 	    	}
 	    }
 	    return rowsCleared;
@@ -204,14 +241,29 @@ public class Board {
 	 * overview docs.
 	 */
 	public void undo() {
-	    // YOUR CODE HERE
+		if (!this.committed) {
+			for (int i = 0; i < this.width; i++) {
+				for (int j = 0; j < this.height; j++) {
+					this.grid[i][j] = this.backupGrid[i][j];
+				}
+			}
+			this.height = this.backupHeights;
+			this.width = this.backupWidths;
+			this.committed = true;
+		} 
 	}
 
 	/**
 	 * Puts the board in the committed state.
 	 */
 	public void commit() {
-	    // YOUR CODE HERE
+		for (int i = 0; i < this.width; i++) {
+			for (int j = 0; j < this.height; j++) {
+				this.backupGrid[i][j] = this.grid[i][j];
+			}
+		}
+	    this.backupHeights = this.height;
+	    this.backupWidths = this.width;
 	    this.committed = true;
 	}
 
@@ -222,7 +274,8 @@ public class Board {
 	 */
 	public String toString() {
 		StringBuilder buff = new StringBuilder();
-		for (int y = this.height - 1; y >= 0; y--) {
+		for (int y = this.height
+				- 1; y >= 0; y--) {
 			buff.append('|');
 			for (int x = 0; x < this.width; x++) {
 				if (getGrid(x, y))
@@ -236,7 +289,7 @@ public class Board {
 			buff.append('-');
 		return buff.toString();
 	}
-/**
+
 	// Only for unit tests
 	protected void updateWidthsHeights() {
 		Arrays.fill(this.widths, 0);
@@ -249,6 +302,6 @@ public class Board {
 				}
 			}
 		}
-	}**/
+	}
 
 }
