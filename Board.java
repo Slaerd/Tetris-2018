@@ -33,11 +33,11 @@ public class Board {
 		this.committed = true;
 		
 		this.backupGrid = new boolean[width][height];
-		this.backupHeights = width;
-		this.backupWidths = height;
+		this.backupHeights = height;
+		this.backupWidths = width;
 		
-		this.heights = new int[height];
-		this.widths = new int[width];
+		this.heights = new int[width];
+		this.widths = new int[height];
 		/**Normalment deja initialise avec false
 		for (boolean[] i : this.grid){
 			for (boolean j : i){
@@ -45,11 +45,11 @@ public class Board {
 			}
 		}**/
 		
-		for (int i = 0; i < width; i++) {
+		for (int i = 0; i < height; i++) {
 			this.widths[i] = 0;
 		}
 		
-		for (int i = 0; i < height; i++) {
+		for (int i = 0; i < width; i++) {
 			this.heights[i] = 0;
 		}
 	

@@ -68,7 +68,7 @@ public class BoardTest {
 	@Test
 	public void testUndo() {
 		Board b = new Board(3, 6);
-		
+
 		Piece p1 = new Piece(Piece.STICK_STR);
 		b.place(p1, 1, 1);
 		b.undo();
@@ -115,15 +115,11 @@ public class BoardTest {
 		
 		Piece p = new Piece(Piece.STICK_STR);
 		b.place(p, 0, 1);
-		System.out.println(b.toString());
 		assertEquals(5, b.getMaxHeight());
 
 		b.undo();
-		System.out.println(b.toString());
 		b.place(p, 0, 0);
-		System.out.println(b.toString());
 		b.commit();
-		System.out.println(b.toString());
 		assertEquals(4, b.getMaxHeight());
 	}
 	
@@ -131,7 +127,6 @@ public class BoardTest {
 	public void testSeveralUndo() {
 		Piece p1 = new Piece(Piece.STICK_STR);
 		Board b2 = new Board(3, 10);
-		
 		b2.place(p1, 1, 1);
 		b2.commit();
 		b2.place(p1, 0, 3);
