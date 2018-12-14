@@ -44,7 +44,15 @@ public class Piece {
 	public Piece(List<TPoint> points) {
 
 	    this.body = points;
-	    this.width = points.get(3).x + 1;
+	    
+	    int maxWidth = -1;
+	    for(TPoint point : points) {
+	    	if(point.x > maxWidth) {
+	    		maxWidth = point.x;
+	    	}
+	    }
+	    this.width = maxWidth + 1;
+	    
 	    this.skirt = new ArrayList<Integer>();
 	    
 
@@ -54,14 +62,13 @@ public class Piece {
 	    for(TPoint point : points) {
 	    	if(point.y < this.skirt.get(point.x))
 	    		this.skirt.set(point.x, point.y);
-	  }
+	    }
 	    
 	    int maxHeight = -1;
 	    for(TPoint point : points) {
 	    	if(point.y > maxHeight)
 	    		maxHeight = point.y;
 	    }
-	    	
 	    this.height = maxHeight + 1;
 	}
 	
@@ -141,9 +148,9 @@ public class Piece {
 	    	nBody.add(nPoint);
 	    }
 	    
-	    List<TPoint> nBodyOrd = new ArrayList<TPoint>();
+	    //List<TPoint> nBodyOrd = new ArrayList<TPoint>();
 	    
-	    for(int i = 0; i < this.height; i++) {
+	    /*for(int i = 0; i < this.height; i++) {
 	    	for(int j = 0; j < this.width; j++) {
 	    		for(TPoint point : nBody) {
 	    			if(point.equals(new TPoint(i,j)) ) {
@@ -152,8 +159,9 @@ public class Piece {
 	    			}
 	    		}	
 	    	}
-	    }
-	    return new Piece(nBodyOrd);
+	    }*/
+	    
+	    return new Piece(nBody);
 	}
 
 	/**
@@ -164,9 +172,16 @@ public class Piece {
 	 */
 	public boolean equals(Object obj) {
 		if(obj.getClass() == Piece.class) {
-			Piece mobj = (Piece) obj;
-		    for(int i = 0; i < this.body.size(); i++) {
-		    	if(!this.body.get(i).equals(mobj.body.get(i)))
+			Piece piece2 = (Piece) obj;
+		    for(TPoint points1 : this.body) {
+		    	boolean pointExists = false;
+		    	for(TPoint points2 : piece2.body) {
+		    		if(points1.equals(points2)) {
+		    			pointExists = true;
+		    			break;
+		    		}
+		    	}
+		    	if(!pointExists)
 		    		return false;
 		    }
 		    return true;
@@ -177,13 +192,13 @@ public class Piece {
 	}
 
 	public String toString() {
-		String s = "\n";
-		s += "Points : ";
+		String s = "";
+		//s += "Points : ";
 	    s += this.body.toString();
-	    s += "\nSkirt : ";
-	    s += this.skirt.toString();
-	    s += "\nWidth : " + this.width;
-	    s += "\nHeight : " + this.height;
+	    //s += "\nSkirt : ";
+	    //s += this.skirt.toString();
+	    //s += "\nWidth : " + this.width;
+	    //s += "\nHeight : " + this.height;
 	    return s;
 	    
 	}
