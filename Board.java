@@ -57,7 +57,7 @@ public class Board {
 	
 	//Copy a board
 	public Board(Board Cope){
-		/**this.width = Cope.width;
+		this.width = Cope.width;
 		this.height = Cope.height;
 		
 		this.grid = Cope.grid;
@@ -68,7 +68,7 @@ public class Board {
 		this.backupWidths = Cope.backupWidths;
 		
 		this.widths = Cope.widths;
-		this.heights = Cope.heights;**/
+		this.heights = Cope.heights;
 		for (int i = 0; i < this.width; i++) {
 			for (int j = 0; j < this.height; j++) {
 				this.backupGrid[i][j] = this.grid[i][j];
