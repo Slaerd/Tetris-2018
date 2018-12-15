@@ -20,7 +20,7 @@ public class DefaultBrain implements Brain {
 	public Brain.Move bestMove(Board board, Piece piece, int limitHeight) {
 		Brain.Move move = new Brain.Move();
 		board = new Board(board);
-
+		
 		double bestScore = 1e20;
 		int bestX = 0;
 		int bestY = 0;
@@ -48,6 +48,7 @@ public class DefaultBrain implements Brain {
 
 					double score = rateBoard(board);
 					if (score < bestScore) {
+						//System.out.println("hello");
 						bestScore = score;
 						bestX = x;
 						bestY = y;
@@ -65,6 +66,7 @@ public class DefaultBrain implements Brain {
 		}
 
 		if (bestPiece == null) {
+			//System.out.println("brain nul");
 			return null; // could not find a play at all!
 		} else {
 			move.x = bestX;

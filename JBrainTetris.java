@@ -18,17 +18,26 @@ import javax.swing.event.ChangeListener;
 public class JBrainTetris extends JTetris{
 	
 	private static final long serialVersionUID = 1L;
-	private DefaultBrain brain;
+	private Brain brain;
 	private boolean brainMode;
+	private boolean paused;
 	
-	public JBrainTetris(int pixels,DefaultBrain brain){
+	/**
+	 * Cree un tableau de jeu selon les params
+	 * @param pixels Taille du tableau de jeu
+	 * @param brain Type d'IA qui va eventuellement jouer au Tetris
+	 */
+	public JBrainTetris(int pixels,Brain brain){
 		super(pixels);
 		this.brain = brain;
 		this.brainMode = false;
+		this.paused = false;
 	}
 	
 	public void tick(int verb) {
-		if (!this.gameOn) {
+		System.out.println("pause = " + this.paused);
+		if (!this.gameOn || this.paused) {
+			//System.out.println("salut");
 			return;
 		}
 
@@ -39,14 +48,18 @@ public class JBrainTetris extends JTetris{
 		// Sets the newXXX ivars
 		if(verb == DOWN && this.brainMode) {
 			Brain.Move bestMove = this.brain.bestMove(this.board, this.currentPiece, this.board.getHeight() - 4);
-			this.currentPiece = bestMove.piece;
-			this.currentX = bestMove.x;
-			this.currentY = bestMove.y;
-			
-		}
-		
-		this.computeNewPosition(verb);
+			if(bestMove != null) {
+				System.out.println(this.currentPiece.toString());
+				System.out.println("my name is jacksepticeye");
+				newPiece = bestMove.piece;
+				newX = bestMove.x;
+				newY = bestMove.y;
+			}else
+				this.computeNewPosition(verb);
+		}else
+			this.computeNewPosition(verb);
 
+		
 		// try out the new position (rolls back if it doesn't work)
 		int result = setCurrent(newPiece, newX, newY);
 
@@ -57,6 +70,7 @@ public class JBrainTetris extends JTetris{
 		}
 
 		boolean failed = (result >= Board.PLACE_OUT_BOUNDS);
+		System.out.println(failed);
 
 		// if it didn't work, put it back the way it was
 		if (failed) {
@@ -73,7 +87,7 @@ public class JBrainTetris extends JTetris{
 		 * correct "landed" position, so we're done with the falling of this
 		 * piece.
 		 */
-		if (failed && verb == DOWN && !moved) { // it's landed
+		if ((failed && verb == DOWN && !moved) || this.brainMode) { // it's landed
 
 			int cleared = board.clearRows();
 			if (cleared > 0) {
@@ -105,6 +119,7 @@ public class JBrainTetris extends JTetris{
 				this.stopGame();
 			} else {
 				// Otherwise add a new piece and keep playing
+				System.out.println("new piece owo");
 				this.addNewPiece();
 			}
 		}
@@ -114,8 +129,19 @@ public class JBrainTetris extends JTetris{
 		moved = (!failed && verb != DOWN);
 	}
 	
+	/**
+	 * Active ou desactive le jeu automatique de l'IA selon b
+	 */
 	public void toggleBrain(boolean b) {
 		this.brainMode = b;
+	}
+	
+	public void pauseChange() {
+		this.paused = !this.paused;
+	}
+	
+	public void unpause() {
+		this.paused = false;
 	}
 	
 	public JComponent createControlPanel() {
@@ -142,9 +168,18 @@ public class JBrainTetris extends JTetris{
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				startGame();
+				unpause();
 			}
 		});
-
+		
+		JButton pauseButton = new JButton("Pause");
+		panel.add(pauseButton);
+		pauseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				pauseChange();
+			}
+		});
+		
 		// STOP button
 		stopButton = new JButton("Stop");
 		panel.add(stopButton);
@@ -194,7 +229,7 @@ public class JBrainTetris extends JTetris{
 	}
 	
 	public static void main(String[] a) {
-		DefaultBrain dBrain = new DefaultBrain();
+		Brain dBrain = new DefaultBrain();
 		JBrainTetris tetris = new JBrainTetris(16,dBrain);
 		JFrame frame = JBrainTetris.createFrame(tetris);
 		frame.setVisible(true);
