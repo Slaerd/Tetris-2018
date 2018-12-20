@@ -2,7 +2,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -18,9 +17,12 @@ import javax.swing.event.ChangeListener;
 public class JBrainTetris extends JTetris{
 	
 	private static final long serialVersionUID = 1L;
-	private Brain brain;
-	private boolean brainMode;
-	private boolean paused;
+	private Brain brain;			//Type de brain qu'utilisera l'IA
+	private boolean brainMode;		//Vaut True si le brain est actif, false sinon
+	private boolean paused;			//Un attribut ajoute pour mettre le jeu en pause, et faciliter les tests
+	private Brain.Move bestMove;	//Ceci contient les coups de l'IA si elle est active (et qu'elle en trouve)
+	private int brainMoveNb;		//Compte les mouvements de l'IA pour une meme piece
+									//Ceci est utile pour un cas que l'on souhaite eviter lors de l'appel de tick
 	
 	/**
 	 * Cree un tableau de jeu selon les params
@@ -32,33 +34,47 @@ public class JBrainTetris extends JTetris{
 		this.brain = brain;
 		this.brainMode = false;
 		this.paused = false;
+		this.bestMove = null;
+		this.brainMoveNb = 0;
 	}
 	
+	/**
+	 * Methode surchargee de tick qui ici prend en compte l'eventuelle activation de notre brain
+	 */
 	public void tick(int verb) {
-		System.out.println("pause = " + this.paused);
 		if (!this.gameOn || this.paused) {
-			//System.out.println("salut");
 			return;
 		}
 
 		if (currentPiece != null) {
 			this.board.undo(); // remove the piece from its old position
 		}
-
+		
 		// Sets the newXXX ivars
-		if(verb == DOWN && this.brainMode) {
-			Brain.Move bestMove = this.brain.bestMove(this.board, this.currentPiece, this.board.getHeight() - 4);
-			if(bestMove != null) {
-				System.out.println(this.currentPiece.toString());
-				System.out.println("my name is jacksepticeye");
-				newPiece = bestMove.piece;
-				newX = bestMove.x;
-				newY = bestMove.y;
-			}else
-				this.computeNewPosition(verb);
-		}else
+		if(verb == DOWN && this.brainMode && bestMove == null) { //On cherche le meilleur coup
+			brainMoveNb = 0; //On reinitialise le nombre de mouvements
+			bestMove = this.brain.bestMove(this.board, this.currentPiece, this.board.getHeight() - 4);
+		}
+		
+		if(verb == DOWN && bestMove != null && brainMoveNb > 0) {	//La condition brainMoveNb > 0 permet d'eviter la suppression d'une piece
+																	//due a une rotation initiale qui sortirait du tableau
+			if(!currentPiece.equals(bestMove.piece)) {
+				System.out.println(currentPiece.toString());
+				System.out.println(bestMove.piece.toString());
+				System.out.println("Should be rotated");
+				this.computeNewPosition(ROTATE);
+			}else if(currentX < bestMove.x) {
+				System.out.println("Should be going right");
+				this.computeNewPosition(RIGHT);
+			}else if(currentX > bestMove.x) {
+				System.out.println("Should be going left");
+				this.computeNewPosition(LEFT);
+			}else 
+				this.computeNewPosition(verb);	//On est obligé d'appeler separement computeNewPosition(verb) pour ne pas effectuer l'operation 2 fois
+		}else									//et ne pas forcer un tick vers le bas lors du deplacement de notre brain qui pourrait etre fatal
 			this.computeNewPosition(verb);
-
+		
+		brainMoveNb++;							//Arrive ici, on a fait un mouvement, on incremente donc brainMoveNb
 		
 		// try out the new position (rolls back if it doesn't work)
 		int result = setCurrent(newPiece, newX, newY);
@@ -70,7 +86,7 @@ public class JBrainTetris extends JTetris{
 		}
 
 		boolean failed = (result >= Board.PLACE_OUT_BOUNDS);
-		System.out.println(failed);
+		//System.out.println(failed);
 
 		// if it didn't work, put it back the way it was
 		if (failed) {
@@ -87,8 +103,7 @@ public class JBrainTetris extends JTetris{
 		 * correct "landed" position, so we're done with the falling of this
 		 * piece.
 		 */
-		if ((failed && verb == DOWN && !moved) || this.brainMode) { // it's landed
-
+		if ((failed && verb == DOWN && !moved)) { // it's landed
 			int cleared = board.clearRows();
 			if (cleared > 0) {
 				// score goes up by 5, 10, 20, 40 for row clearing
@@ -119,8 +134,14 @@ public class JBrainTetris extends JTetris{
 				this.stopGame();
 			} else {
 				// Otherwise add a new piece and keep playing
-				System.out.println("new piece owo");
+				System.out.println("###########################################################");
+				System.out.print("######### NEW PIECE ");
+				
+				this.bestMove = null;	//Une fois la piece posee on reinitialise notre bestMove
 				this.addNewPiece();
+				System.out.println(currentPiece.toString() +  " ###########");
+				System.out.println("###########################################################");
+				
 			}
 		}
 
@@ -130,20 +151,42 @@ public class JBrainTetris extends JTetris{
 	}
 	
 	/**
-	 * Active ou desactive le jeu automatique de l'IA selon b
+	 * Active ou desactive le jeu automatique de l'IA selon un booleen
 	 */
 	public void toggleBrain(boolean b) {
 		this.brainMode = b;
 	}
 	
+	/**
+	 * Methode pour mettre le jeu en pause ou reprendre
+	 */
 	public void pauseChange() {
 		this.paused = !this.paused;
 	}
-	
+											//On a besoin de 2 methodes differentes : 
+											//unpause pour cliquer sur start sans avoir a depauser
+											//pauseChange pour changer l'etat de pause
+	/**
+	 * Methode pour reprendre le jeu
+	 */
 	public void unpause() {
 		this.paused = false;
 	}
+	/**
+	 * Methode surchargee de startGame pour depauser automatiquement le jeu
+	 * ainsi que reinitialiser le bestMove eventuellement restant de la partie precedente
+	 */
+	public void startGame() {
+		super.startGame();
+		unpause();
+		this.bestMove = null;
+	}
 	
+	/**
+	 * Methode surchargee de createControlPanel ajoutant un bouton Brain pour laisser l'IA jouer
+	 * On dispose aussi d'un bouton pause pour controler les tests
+	 * On ne fait pas d'appel super car on modifie la methodes startGame
+	 */
 	public JComponent createControlPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -168,7 +211,6 @@ public class JBrainTetris extends JTetris{
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				startGame();
-				unpause();
 			}
 		});
 		

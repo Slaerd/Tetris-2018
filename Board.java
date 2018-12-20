@@ -101,7 +101,15 @@ public class Board {
 		}
 	    return MaxHeight; 
 	}
-
+	
+	/*###################################################
+	 *#########      READ THEN DELETE ME    #############
+	 *###################################################
+	 *Vu la maniere dont place est code, y'avait un probleme sur ton ancienne fonction qui faisait
+	 *que les pieces avec une coordonnee (0,0) flottaient aux dessus des autres blocs
+	 *Du coup faut faire intervenir la skirt et decaler en fonction de la hauteur du premier bloc.
+	 */
+	
 	/**
 	 * Given a piece and an x, returns the y value where the piece would come to
 	 * rest if it were dropped straight down at that x.
@@ -109,14 +117,16 @@ public class Board {
 	 * O(skirt length).
 	 */
 	public int dropHeight(Piece piece, int x) {
-	    int MaxHeight = 0;
-	    int cpt = 0;
-	    for (int i : piece.getSkirt()){
-	    	MaxHeight = Math.max(this.getColumnHeight(x+cpt),MaxHeight);
-	    	cpt++;
+	    int finalHeight = 0;
+	    for(int i = 0; i < piece.getSkirt().size(); i++) {
+	    	if(this.getColumnHeight(x + i) - piece.getSkirt().get(i) >= finalHeight) {
+	    		finalHeight = this.getColumnHeight(x + i) - piece.getSkirt().get(i);
+	    	}
 	    }
-	    return MaxHeight;
+	    return finalHeight;
 	}
+	
+	
 
 	/**
 	 * Returns the height of the given column -- i.e. the y value of the highest
