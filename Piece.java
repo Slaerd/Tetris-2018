@@ -54,9 +54,8 @@ public class Piece {
 	    this.width = maxWidth + 1;
 	    
 	    this.skirt = new ArrayList<Integer>();
-	    
 
-	    for(int i = 0; i < this.width; i++)	 	 	 	 	 //init
+	    for(int i = 0; i < this.width; i++)	 	 	 	 	 //initialisation de skirt
 	     	 this.skirt.add(4);
 	   
 	    for(TPoint point : points) {
@@ -147,20 +146,6 @@ public class Piece {
 	    	TPoint nPoint = new TPoint(this.height - point.y - 1,point.x);
 	    	nBody.add(nPoint);
 	    }
-	    
-	    //List<TPoint> nBodyOrd = new ArrayList<TPoint>();
-	    
-	    /*for(int i = 0; i < this.height; i++) {
-	    	for(int j = 0; j < this.width; j++) {
-	    		for(TPoint point : nBody) {
-	    			if(point.equals(new TPoint(i,j)) ) {
-	    				nBodyOrd.add(point);
-	    				break;
-	    			}
-	    		}	
-	    	}
-	    }*/
-	    
 	    return new Piece(nBody);
 	}
 
@@ -178,27 +163,31 @@ public class Piece {
 		    	for(TPoint points2 : piece2.body) {
 		    		if(points1.equals(points2)) {
 		    			pointExists = true;
-		    			break;
+		    			break;					//On sort si on trouve le bon point
 		    		}
 		    	}
-		    	if(!pointExists)
-		    		return false;
+		    	if(!pointExists)	//Si un point n'est pas trouvable dans la deuxieme piece
+		    		return false;	//on retourne tout de suite false
 		    }
 		    return true;
 		}
 		return false;
-		
-	    
 	}
-
+	/**
+	 * Retourne un tetramino sous forme de string selon le format suivant :
+	 * Points : $Liste des points
+	 * Skirt : 	$Liste des hauteurs minimales pour chaque x
+	 * Width : $Largeur de la piece
+	 * Height : $Hauteur de la piece
+	 */
 	public String toString() {
 		String s = "";
-		//s += "Points : ";
+		s += "Points : ";
 	    s += this.body.toString();
-	    //s += "\nSkirt : ";
-	    //s += this.skirt.toString();
-	    //s += "\nWidth : " + this.width;
-	    //s += "\nHeight : " + this.height;
+	    s += "\nSkirt : ";
+	    s += this.skirt.toString();
+	    s += "\nWidth : " + this.width;
+	    s += "\nHeight : " + this.height;
 	    return s;
 	    
 	}

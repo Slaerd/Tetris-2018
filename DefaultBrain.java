@@ -37,8 +37,12 @@ public class DefaultBrain implements Brain {
 			// For current rotation, try all the possible columns
 			for (int x = 0; x < xBound; x++) {
 				int y = board.dropHeight(current, x);
-				if (y > yBound) { // piece does stick up too far
-					continue;
+				int skirtMax = 0;
+				for(int i : piece.getSkirt()) {				//Notre implementation de place calcule la hauteur de la coordonnee (0,0) d'une piece
+					skirtMax = Math.max(skirtMax, i);		//Il faut donc regarder avec skirt si la piece depasse
+				}
+				if (y + skirtMax > yBound) { // piece does stick up too far
+					continue;								
 				}
 				int result = board.place(current, x, y);
 				if (result <= Board.PLACE_ROW_FILLED) {
@@ -47,10 +51,7 @@ public class DefaultBrain implements Brain {
 					}
 
 					double score = rateBoard(board);
-					System.out.println("board score = " + score);
-					System.out.println(board.toString());
 					if (score < bestScore) {
-						//System.out.println("hello");
 						bestScore = score;
 						bestX = x;
 						bestY = y;
@@ -68,7 +69,6 @@ public class DefaultBrain implements Brain {
 		}
 
 		if (bestPiece == null) {
-			//System.out.println("brain nul");
 			return null; // could not find a play at all!
 		} else {
 			move.x = bestX;
@@ -111,7 +111,7 @@ public class DefaultBrain implements Brain {
 		// Add up the counts to make an overall score
 		// The weights, 8, 40, etc., are just made up numbers that appear to
 		// work
-		return (8 * maxHeight + 40 * avgHeight + 1.25 * holes); //20 a la place que 1.25 car j'aime pas les trous
+		return (8 * maxHeight + 40 * avgHeight + 1.25 * holes);
 	}
 
 }
