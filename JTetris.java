@@ -83,7 +83,10 @@ public class JTetris extends JComponent {
 	protected JButton stopButton;
 	protected javax.swing.Timer timer;
 	protected JSlider speed;
+	protected JSlider luck;
 	protected JCheckBox testButton;
+	protected JCheckBox Adversaire;
+	protected boolean AdversaireMode = false;
 
 	public final int DELAY = 400; // milliseconds per tick
 
@@ -254,8 +257,31 @@ public class JTetris extends JComponent {
 	 */
 	public Piece pickNextPiece() {
 		int pieceNum;
-
-		pieceNum = (int) (pieces.length * random.nextDouble());
+		AdversaireMode = Adversaire.isSelected();
+		if (AdversaireMode) {
+			int randChoose = random.nextInt(101);
+			
+			//Adversaire ne choisit pas
+			if ( randChoose < luck.getValue()) {
+				pieceNum = (int) (pieces.length * random.nextDouble());
+			} else {
+				//Choit de l adversaire
+				int worstPiece = 0;
+				double worstScore = 0;
+				Brain PieceI = new DefaultBrain();
+				//On cherche la pire piece 
+				for (int i = 0; i < pieces.length; i++) {
+					Brain.Move TP = PieceI.bestMove(this.board, pieces[i], this.board.getHeight() - 4);
+					if (TP.score > worstScore) {
+						worstPiece = i;
+						worstScore = TP.score;
+					}
+				}
+				pieceNum = worstPiece;
+			}	
+		} else {
+			pieceNum = (int) (pieces.length * random.nextDouble());	
+		}
 
 		Piece piece = pieces[pieceNum];
 
@@ -597,6 +623,7 @@ public class JTetris extends JComponent {
 		panel.add(timeLabel);
 
 		panel.add(Box.createVerticalStrut(12));
+		
 
 		// START button
 		startButton = new JButton("Start");
@@ -621,25 +648,42 @@ public class JTetris extends JComponent {
 		JPanel row = new JPanel();
 
 		// SPEED slider
-		panel.add(Box.createVerticalStrut(12));
+		panel.add(Box.createVerticalStrut(6));
 		row.add(new JLabel("Speed:"));
 		speed = new JSlider(0, 200, 75); // min, max, current
 		speed.setPreferredSize(new Dimension(100, 15));
 
 		updateTimer();
 		row.add(speed);
-
+		
 		panel.add(row);
+		
+		
+		Adversaire = new JCheckBox("Adversaire active");
+		panel.add(Adversaire);
+
+		JPanel rowAdversaire = new JPanel();
+		
+		//SLider luck
+		panel.add(Box.createVerticalStrut(6));
+		rowAdversaire.add(new JLabel("Luck:"));
+		luck = new JSlider(0, 100, 75); // min, max, current
+		luck.setPreferredSize(new Dimension(100, 15));
+		rowAdversaire.add(luck);
+		
+		panel.add(rowAdversaire);
+		
+		
 		speed.addChangeListener(new ChangeListener() {
 			// when the slider changes, sync the timer to its value
 			public void stateChanged(ChangeEvent e) {
 				updateTimer();
 			}
 		});
-
+		
 		testButton = new JCheckBox("Test sequence");
 		panel.add(testButton);
-
+		
 		return panel;
 	}
 
