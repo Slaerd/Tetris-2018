@@ -23,6 +23,12 @@ public class JBrainTetris extends JTetris{
 	private Brain.Move bestMove;	//Ceci contient les coups de l'IA si elle est active (et qu'elle en trouve)
 	private int brainMoveNb;		//Compte les mouvements de l'IA pour une meme piece
 									//Ceci est utile pour un cas que l'on souhaite eviter lors de l'appel de tick
+
+	protected JSlider luck;
+	protected JCheckBox Adversaire;
+	protected boolean AdversaireMode = false;
+	
+	
 	
 	/**
 	 * Cree un tableau de jeu selon les params
@@ -150,6 +156,41 @@ public class JBrainTetris extends JTetris{
 		moved = (!failed && verb != DOWN);
 	}
 	
+	@Override
+	public Piece pickNextPiece() {
+		int pieceNum;
+		AdversaireMode = Adversaire.isSelected();
+		if (AdversaireMode) {
+			int randChoose = random.nextInt(101);
+			
+			//Adversaire ne choisit pas
+			if ( randChoose < luck.getValue()) {
+				pieceNum = (int) (pieces.length * random.nextDouble());
+			} else {
+				//Choit de l adversaire
+				int worstPiece = 0;
+				double worstScore = 0;
+				Brain PieceI = new DefaultBrain();
+				//On cherche la pire piece 
+				for (int i = 0; i < pieces.length; i++) {
+					Brain.Move TP = PieceI.bestMove(this.board, pieces[i], this.board.getHeight() - 4);
+					if (TP.score > worstScore) {
+						worstPiece = i;
+						worstScore = TP.score;
+					}
+				}
+				pieceNum = worstPiece;
+			}	
+		} else {
+			pieceNum = (int) (pieces.length * random.nextDouble());	
+		}
+
+		Piece piece = pieces[pieceNum];
+
+		return (piece);
+	}
+	
+	
 	/**
 	 * Active ou desactive le jeu automatique de l'IA selon un booleen
 	 */
@@ -236,7 +277,7 @@ public class JBrainTetris extends JTetris{
 		JPanel row = new JPanel();
 
 		// SPEED slider
-		panel.add(Box.createVerticalStrut(12));
+		panel.add(Box.createVerticalStrut(6));
 		row.add(new JLabel("Speed:"));
 		speed = new JSlider(0, 200, 75); // min, max, current
 		speed.setPreferredSize(new Dimension(100, 15));
@@ -251,7 +292,24 @@ public class JBrainTetris extends JTetris{
 				updateTimer();
 			}
 		});
+		
 
+		Adversaire = new JCheckBox("Adversaire active");
+		panel.add(Adversaire);
+
+		JPanel rowAdversaire = new JPanel();
+		
+		//SLider luck
+		panel.add(Box.createVerticalStrut(6));
+		rowAdversaire.add(new JLabel("Luck:"));
+		luck = new JSlider(0, 100, 75); // min, max, current
+		luck.setPreferredSize(new Dimension(100, 15));
+		rowAdversaire.add(luck);
+		
+		panel.add(rowAdversaire);
+		
+		
+		
 		testButton = new JCheckBox("Test sequence");
 		panel.add(testButton);
 
