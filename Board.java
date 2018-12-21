@@ -38,12 +38,6 @@ public class Board {
 		
 		this.heights = new int[width];
 		this.widths = new int[height];
-		/**Normalment deja initialise avec false
-		for (boolean[] i : this.grid){
-			for (boolean j : i){
-				j = false;
-			}
-		}**/
 		
 		for (int i = 0; i < height; i++) {
 			this.widths[i] = 0;
@@ -101,15 +95,7 @@ public class Board {
 		}
 	    return MaxHeight; 
 	}
-	
-	/*###################################################
-	 *#########      READ THEN DELETE ME    #############
-	 *###################################################
-	 *Vu la maniere dont place est code, y'avait un probleme sur ton ancienne fonction qui faisait
-	 *que les pieces avec une coordonnee (0,0) flottaient aux dessus des autres blocs
-	 *Du coup faut faire intervenir la skirt et decaler en fonction de la hauteur du premier bloc.
-	 */
-	
+		
 	/**
 	 * Given a piece and an x, returns the y value where the piece would come to
 	 * rest if it were dropped straight down at that x.
