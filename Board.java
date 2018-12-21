@@ -63,6 +63,7 @@ public class Board {
 		
 		this.widths = Cope.widths;
 		this.heights = Cope.heights;
+		//On copie indice par indice pour faire une copie et non le pointage sur la meme memoire
 		for (int i = 0; i < this.width; i++) {
 			for (int j = 0; j < this.height; j++) {
 				this.backupGrid[i][j] = this.grid[i][j];
@@ -186,11 +187,11 @@ public class Board {
 	    	return PLACE_OUT_BOUNDS;
 	    } 
 	    for (TPoint i : piece.getBody()){
-	    	if (this.getGrid(i.x+x,i.y+y)) {
+	    	if (this.getGrid(i.x+x,i.y+y)) { //Si un point de notre piece surplace une autre piece
 	    		return PLACE_BAD;
 	    	}
 	    }
-	    boolean line_Full = false;
+	    boolean line_Full = false; //On place la piece
 	    for (TPoint i : piece.getBody()) {
 	    	this.grid[i.x+x][i.y+y] = true;
 	    	if (this.getRowWidth(i.y+y) == this.width) {
@@ -210,6 +211,7 @@ public class Board {
 	 */
 	public int clearRows() {
 	    int rowsCleared = 0;
+	    //On parcourt toutes les lignes pour voir si elles sont remplis 
 	    for (int y = 0; y < this.height; y++){
 	    	if( this.width == this.getRowWidth(y)){
 	    		rowsCleared++;
@@ -238,7 +240,7 @@ public class Board {
 	 */
 	public void undo() {
 		if (!this.committed) {
-			for (int i = 0; i < this.width; i++) {
+			for (int i = 0; i < this.width; i++) { //On copie indice par indice pour avoir une copie
 				for (int j = 0; j < this.height; j++) {
 					this.grid[i][j] = this.backupGrid[i][j];
 				}
@@ -253,7 +255,7 @@ public class Board {
 	 * Puts the board in the committed state.
 	 */
 	public void commit() {
-		for (int i = 0; i < this.width; i++) {
+		for (int i = 0; i < this.width; i++) { //On copie indice par indice pour avoir une copie
 			for (int j = 0; j < this.height; j++) {
 				this.backupGrid[i][j] = this.grid[i][j];
 			}
